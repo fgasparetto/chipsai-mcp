@@ -128,7 +128,7 @@ ChipsAI uses a credit-based pricing model:
 | **Premium** | 2.0 | GPT-4o, Mistral Large, DeepSeek Reasoner |
 | **Top** | 3.0 | GPT-4.1, Claude Sonnet 4.6, Gemini 2.5 Pro |
 
-Bring your own API key to use any model for free (no credits consumed).
+Credit packages: **150 credits for €5** | **700 for €20** | **2000 for €50**. Credits never expire. Bring your own API key to use any model for free (no credits consumed).
 
 ## Usage Examples
 
