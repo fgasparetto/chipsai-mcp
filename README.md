@@ -5,23 +5,27 @@ MCP (Model Context Protocol) server for [ChipsAI](https://ai.chipsbuilder.com) â
 ## Requirements
 
 - Python 3.11+
+- [uv](https://docs.astral.sh/uv/) (recommended) or pip
 - A ChipsAI account ([sign up](https://ai.chipsbuilder.com))
 
-## Installation
+## Quick Start
+
+No installation needed with `uv`:
 
 ```bash
-pip install mcp httpx
+uv run --script server.py
 ```
 
-Or with uv:
+Or install manually:
 
 ```bash
-uv pip install mcp httpx
+pip install "mcp[cli]" httpx
+python server.py
 ```
 
 ## Configuration
 
-The server uses environment variables for authentication (no credentials in code):
+The server uses environment variables for authentication:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
@@ -37,9 +41,8 @@ Add to your project's `.mcp.json`:
 {
   "mcpServers": {
     "chipsai": {
-      "type": "stdio",
-      "command": "python3",
-      "args": ["/path/to/chipsai-mcp/server.py"],
+      "command": "uv",
+      "args": ["run", "--script", "/path/to/chipsai-mcp/server.py"],
       "env": {
         "CHIPSAI_API_URL": "https://ai.chipsbuilder.com",
         "CHIPSAI_USERNAME": "your-username",
@@ -58,8 +61,8 @@ Add to `claude_desktop_config.json`:
 {
   "mcpServers": {
     "chipsai": {
-      "command": "python3",
-      "args": ["/path/to/chipsai-mcp/server.py"],
+      "command": "uv",
+      "args": ["run", "--script", "/path/to/chipsai-mcp/server.py"],
       "env": {
         "CHIPSAI_USERNAME": "your-username",
         "CHIPSAI_PASSWORD": "your-password"
@@ -87,9 +90,9 @@ Add to `claude_desktop_config.json`:
 
 | Tool | Description |
 |------|-------------|
-| `upload_document` | Upload PDF/DOC/DOCX to a chatbot's knowledge base |
+| `upload_document` | Upload PDF/DOC/DOCX to a chatbot's knowledge base (LlamaParse) |
 
-### Conversations (VIP)
+### Conversations
 
 | Tool | Description |
 |------|-------------|
@@ -99,24 +102,45 @@ Add to `claude_desktop_config.json`:
 | `update_conversation` | Update conversation title |
 | `delete_conversation` | Delete a conversation and all messages |
 | `get_conversation_messages` | Get all messages from a conversation |
-| `send_message` | Send a message and get AI response |
+
+### Chat
+
+| Tool | Description |
+|------|-------------|
+| `send_message` | Send a message and get AI response (auto-creates conversation) |
 
 ### User & Models
 
 | Tool | Description |
 |------|-------------|
-| `get_user_plan` | Get current plan info (limits, usage) |
-| `list_ai_models` | List available AI models by provider |
+| `get_user_plan` | Get credit balance, unlimited status, usage stats |
+| `list_ai_models` | List available AI models by provider with credit costs |
+
+## Credit System
+
+ChipsAI uses a credit-based pricing model:
+
+| Tier | Credits/msg | Models |
+|------|-------------|--------|
+| **Free** | 0 | Llama 4 Scout, Llama 3.3 70B, Llama 3.1 8B (Groq) |
+| **Economy** | 0.5 | Mistral Nemo, DeepSeek Chat |
+| **Standard** | 1.0 | GPT-4o-mini, Gemini 2.5 Flash, Mistral Small, Claude Haiku 4.5 |
+| **Premium** | 2.0 | GPT-4o, Mistral Large, DeepSeek Reasoner |
+| **Top** | 3.0 | GPT-4.1, Claude Sonnet 4.6, Gemini 2.5 Pro |
+
+Bring your own API key to use any model for free (no credits consumed).
 
 ## Usage Examples
 
-Once configured, you can use natural language in Claude:
+Once configured, use natural language in Claude:
 
 - *"List my chatbots"*
-- *"Create a chatbot called Support Bot for my company"*
+- *"Create a chatbot called Support Bot"*
 - *"Upload the product catalog PDF to my chatbot"*
+- *"Send a test message to my chatbot"*
 - *"Show analytics for the last 7 days"*
 - *"Change the chatbot model to Claude Sonnet 4.6"*
+- *"What's my credit balance?"*
 - *"What AI models are available?"*
 
 ## Authentication

@@ -1,3 +1,7 @@
+# /// script
+# requires-python = ">=3.11"
+# dependencies = ["mcp[cli]>=1.0.0", "httpx>=0.27.0"]
+# ///
 """
 ChipsAI MCP Server - Manage ai.chipsbuilder.com chatbots via MCP.
 
@@ -119,7 +123,7 @@ mcp = FastMCP(
     instructions=(
         "Manage ai.chipsbuilder.com (ChipsAI) chatbots, conversations, and AI models. "
         "Use list_chatbots to see chatbots, get/create/update/delete them. "
-        "VIP users can manage conversations and send chat messages."
+        "Any authenticated user can manage conversations and send chat messages."
     ),
 )
 
@@ -234,11 +238,11 @@ async def upload_document(uuid: str, file_path: str) -> dict:
         return r.json()
 
 
-# ========== Conversations (VIP) ==========
+# ========== Conversations ==========
 
 @mcp.tool()
 async def list_conversations(chatbot_uuid: str = "") -> dict:
-    """List conversations. Optionally filter by chatbot_uuid. Requires VIP plan."""
+    """List conversations. Optionally filter by chatbot_uuid."""
     params = {}
     if chatbot_uuid:
         params["chatbot"] = chatbot_uuid
@@ -247,7 +251,7 @@ async def list_conversations(chatbot_uuid: str = "") -> dict:
 
 @mcp.tool()
 async def create_conversation(chatbot_id: str, title: str = "New conversation") -> dict:
-    """Create a new conversation for a chatbot. Requires VIP plan."""
+    """Create a new conversation for a chatbot."""
     return await api_request(
         "POST", "/api/v1/conversations/", json_data={"chatbot_id": chatbot_id, "title": title}
     )
@@ -255,13 +259,13 @@ async def create_conversation(chatbot_id: str, title: str = "New conversation") 
 
 @mcp.tool()
 async def get_conversation(conversation_id: str) -> dict:
-    """Get conversation details: title, chatbot, timestamps, message count. Requires VIP."""
+    """Get conversation details: title, chatbot, timestamps, message count."""
     return await api_request("GET", f"/api/v1/conversations/{conversation_id}/")
 
 
 @mcp.tool()
 async def update_conversation(conversation_id: str, title: str) -> dict:
-    """Update conversation title. Requires VIP."""
+    """Update conversation title."""
     return await api_request(
         "PATCH", f"/api/v1/conversations/{conversation_id}/", json_data={"title": title}
     )
@@ -269,13 +273,13 @@ async def update_conversation(conversation_id: str, title: str) -> dict:
 
 @mcp.tool()
 async def delete_conversation(conversation_id: str) -> dict:
-    """Delete a conversation and all its messages. Requires VIP."""
+    """Delete a conversation and all its messages."""
     return await api_request("POST", f"/api/v1/conversations/{conversation_id}/delete/")
 
 
 @mcp.tool()
 async def get_conversation_messages(conversation_id: str) -> dict:
-    """Get all messages from a conversation (role, content, timestamp). Requires VIP."""
+    """Get all messages from a conversation (role, content, timestamp)."""
     return await api_request("GET", f"/api/v1/conversations/{conversation_id}/messages/")
 
 
@@ -288,7 +292,7 @@ async def send_message(
     conversation_id: str = "",
     chat_history: list[dict] | None = None,
 ) -> dict:
-    """Send a message to a chatbot and get AI response. Creates new conversation if conversation_id not provided. Requires VIP."""
+    """Send a message to a chatbot and get AI response. Creates new conversation if conversation_id not provided."""
     data: dict[str, Any] = {"message": message}
     if conversation_id:
         data["conversation_id"] = conversation_id
@@ -301,13 +305,13 @@ async def send_message(
 
 @mcp.tool()
 async def get_user_plan() -> dict:
-    """Get current user plan info: plan type, is_pro, email, chatbot count/limit, messages used/limit."""
+    """Get current user info: credit balance, unlimited status, chatbot count, messages used."""
     return await api_request("GET", "/api/v1/user/plan/")
 
 
 @mcp.tool()
 async def list_ai_models() -> dict:
-    """List available AI models grouped by provider (name, model_id, is_free)."""
+    """List available AI models grouped by provider (name, model_id, is_free, credit_cost)."""
     return await api_request("GET", "/api/v1/ai-models/")
 
 
