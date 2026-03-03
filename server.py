@@ -123,7 +123,8 @@ mcp = FastMCP(
     instructions=(
         "Manage ai.chipsbuilder.com (ChipsAI) chatbots, conversations, and AI models. "
         "Use list_chatbots to see chatbots, get/create/update/delete them. "
-        "Any authenticated user can manage conversations and send chat messages."
+        "Any authenticated user can manage conversations and send chat messages. "
+        "Use list_conversation_history / get_session_messages to browse widget chat history."
     ),
 )
 
@@ -281,6 +282,23 @@ async def delete_conversation(conversation_id: str) -> dict:
 async def get_conversation_messages(conversation_id: str) -> dict:
     """Get all messages from a conversation (role, content, timestamp)."""
     return await api_request("GET", f"/api/v1/conversations/{conversation_id}/messages/")
+
+
+# ========== Conversation History (Widget Sessions) ==========
+
+@mcp.tool()
+async def list_conversation_history(chatbot_uuid: str = "", page: int = 1, page_size: int = 20) -> dict:
+    """List widget conversation sessions (by session_id) with date, chatbot, summary, message count. Paginated. Optionally filter by chatbot_uuid."""
+    params: dict[str, Any] = {"page": page, "page_size": page_size}
+    if chatbot_uuid:
+        params["chatbot"] = chatbot_uuid
+    return await api_request("GET", "/api/v1/history/", params=params)
+
+
+@mcp.tool()
+async def get_session_messages(session_id: str) -> dict:
+    """Get all messages from a widget conversation session: direction (in/out), content, timestamp, summary."""
+    return await api_request("GET", f"/api/v1/history/{session_id}/")
 
 
 # ========== Chat ==========
