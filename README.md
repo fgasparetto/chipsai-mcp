@@ -103,6 +103,13 @@ Add to `claude_desktop_config.json`:
 | `delete_conversation` | Delete a conversation and all messages |
 | `get_conversation_messages` | Get all messages from a conversation |
 
+### Widget History
+
+| Tool | Description |
+|------|-------------|
+| `list_conversation_history` | List widget conversation sessions (paginated, filter by chatbot) |
+| `get_session_messages` | Get all messages from a widget conversation session |
+
 ### Chat
 
 | Tool | Description |
