@@ -1,8 +1,8 @@
 {
-  "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/schema/server.schema.json",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.fgasparetto/chipsai-mcp",
   "title": "ChipsAI MCP Server",
-  "description": "MCP server for ChipsAI — manage chatbots, conversations, documents, and AI models from any MCP client",
+  "description": "MCP server for ChipsAI — manage chatbots, conversations, and AI models",
   "version": "1.0.1",
   "repository": {
     "url": "https://github.com/fgasparetto/chipsai-mcp",
