@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/schema/server.schema.json",
+  "name": "io.github.fgasparetto/chipsai-mcp",
+  "title": "ChipsAI MCP Server",
+  "description": "MCP server for ChipsAI — manage chatbots, conversations, documents, and AI models from any MCP client",
+  "version": "1.0.0",
+  "repository": {
+    "url": "https://github.com/fgasparetto/chipsai-mcp",
+    "source": "github"
+  },
+  "packages": [{
+    "registryType": "pypi",
+    "identifier": "chipsai-mcp",
+    "version": "1.0.0",
+    "transport": { "type": "stdio" },
+    "environmentVariables": [
+      {
+        "name": "CHIPSAI_EMAIL",
+        "description": "ChipsAI account email",
+        "isRequired": true,
+        "isSecret": false
+      },
+      {
+        "name": "CHIPSAI_PASSWORD",
+        "description": "ChipsAI account password",
+        "isRequired": true,
+        "isSecret": true
+      }
+    ]
+  }]
+}

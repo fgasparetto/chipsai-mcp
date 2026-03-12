@@ -1,3 +1,5 @@
+<!-- mcp-name: io.github.fgasparetto/chipsai-mcp -->
+
 # ChipsAI MCP Server
 
 MCP (Model Context Protocol) server for [ChipsAI](https://ai.chipsbuilder.com) — manage chatbots, conversations, documents, and AI models from Claude Code, Claude Desktop, or any MCP client.
