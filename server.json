@@ -3,7 +3,7 @@
   "name": "io.github.fgasparetto/chipsai-mcp",
   "title": "ChipsAI MCP Server",
   "description": "MCP server for ChipsAI — manage chatbots, conversations, documents, and AI models from any MCP client",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "repository": {
     "url": "https://github.com/fgasparetto/chipsai-mcp",
     "source": "github"
@@ -11,7 +11,7 @@
   "packages": [{
     "registryType": "pypi",
     "identifier": "chipsai-mcp",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "transport": { "type": "stdio" },
     "environmentVariables": [
       {
