@@ -173,8 +173,10 @@ async def update_chatbot(
     is_active: bool | None = None,
     allowed_domains: str = "",
     theme: str = "",
+    context_variables: list[dict] | None = None,
 ) -> dict:
-    """Update chatbot fields. Only non-empty values are sent. Use get_chatbot first to see current values."""
+    """Update chatbot fields. Only non-empty values are sent. Use get_chatbot first to see current values.
+    context_variables: list of {key, label, description, default_value} dicts defining variables the host page can pass via data-context."""
     data: dict[str, Any] = {}
     for field, val in [
         ("name", name), ("brand_name", brand_name), ("welcome", welcome),
@@ -187,6 +189,8 @@ async def update_chatbot(
             data[field] = val
     if is_active is not None:
         data["is_active"] = is_active
+    if context_variables is not None:
+        data["context_variables"] = context_variables
     if not data:
         return {"error": "No fields to update. Provide at least one non-empty field."}
     return await api_request("PATCH", f"/api/v1/chatbots/{uuid}/", json_data=data)
@@ -334,5 +338,10 @@ async def list_ai_models() -> dict:
 
 
 # --- Entry point ---
+def main():
+    """Run the MCP server."""
+    mcp.run()
+
+
 if __name__ == "__main__":
     mcp.run()
