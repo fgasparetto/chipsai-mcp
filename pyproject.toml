@@ -1,6 +1,6 @@
 [project]
 name = "chipsai-mcp"
-version = "1.0.1"
+version = "1.1.0"
 description = "MCP server for ChipsAI — manage chatbots, conversations, documents, and AI models from any MCP client"
 requires-python = ">=3.11"
 license = "MIT"

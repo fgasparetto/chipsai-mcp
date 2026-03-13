@@ -19,6 +19,8 @@ from mcp.server.fastmcp import FastMCP
 
 # --- Config from env ---
 API_URL = os.environ.get("CHIPSAI_API_URL", "https://ai.chipsbuilder.com").rstrip("/")
+API_KEY = os.environ.get("CHIPSAI_API_KEY", "")
+# Legacy: username/password (used only if CHIPSAI_API_KEY is not set)
 USERNAME = os.environ.get("CHIPSAI_USERNAME", "")
 PASSWORD = os.environ.get("CHIPSAI_PASSWORD", "")
 
@@ -74,6 +76,14 @@ token_mgr = TokenManager()
 
 
 # --- HTTP helper ---
+async def _get_auth_header(client: httpx.AsyncClient) -> str:
+    """Get Authorization header value. Uses API key if set, otherwise JWT."""
+    if API_KEY:
+        return f"Bearer {API_KEY}"
+    token = await token_mgr.get_token(client)
+    return f"Bearer {token}"
+
+
 async def api_request(
     method: str,
     path: str,
@@ -84,10 +94,9 @@ async def api_request(
 ) -> Any:
     """Make authenticated API request with auto-retry on 401."""
     async with httpx.AsyncClient(timeout=60) as client:
-        token = await token_mgr.get_token(client)
-
         for attempt in range(2):
-            headers = {"Authorization": f"Bearer {token}"}
+            auth_value = await _get_auth_header(client)
+            headers = {"Authorization": auth_value}
             kwargs: dict[str, Any] = {"headers": headers}
             if params:
                 kwargs["params"] = params
@@ -98,9 +107,8 @@ async def api_request(
 
             r = await client.request(method, f"{API_URL}{path}", **kwargs)
 
-            if r.status_code == 401 and attempt == 0:
+            if r.status_code == 401 and attempt == 0 and not API_KEY:
                 token_mgr.invalidate()
-                token = await token_mgr.get_token(client)
                 continue
 
             if r.status_code >= 400:
@@ -228,10 +236,10 @@ async def upload_document(uuid: str, file_path: str) -> dict:
         file_bytes = f.read()
 
     async with httpx.AsyncClient(timeout=120) as client:
-        token = await token_mgr.get_token(client)
+        auth_value = await _get_auth_header(client)
         r = await client.post(
             f"{API_URL}/api/v1/chatbots/{uuid}/upload-document/",
-            headers={"Authorization": f"Bearer {token}"},
+            headers={"Authorization": auth_value},
             files={"document": (filename, file_bytes)},
         )
         if r.status_code >= 400:

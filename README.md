@@ -27,13 +27,24 @@ python server.py
 
 ## Configuration
 
-The server uses environment variables for authentication:
+The server uses environment variables for authentication. **API key is the recommended method** — generate one from your [ChipsAI dashboard](https://ai.chipsbuilder.com/dashboard/settings/).
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| `CHIPSAI_API_KEY` | Your ChipsAI API key (recommended) | — |
 | `CHIPSAI_API_URL` | API base URL | `https://ai.chipsbuilder.com` |
-| `CHIPSAI_USERNAME` | Your ChipsAI username | — |
-| `CHIPSAI_PASSWORD` | Your ChipsAI password | — |
+
+<details>
+<summary>Legacy: username/password authentication</summary>
+
+If you don't have an API key, you can use username/password instead:
+
+| Variable | Description |
+|----------|-------------|
+| `CHIPSAI_USERNAME` | Your ChipsAI username |
+| `CHIPSAI_PASSWORD` | Your ChipsAI password |
+
+</details>
 
 ### Claude Code
 
@@ -43,12 +54,10 @@ Add to your project's `.mcp.json`:
 {
   "mcpServers": {
     "chipsai": {
-      "command": "uv",
-      "args": ["run", "--script", "/path/to/chipsai-mcp/server.py"],
+      "command": "uvx",
+      "args": ["chipsai-mcp"],
       "env": {
-        "CHIPSAI_API_URL": "https://ai.chipsbuilder.com",
-        "CHIPSAI_USERNAME": "your-username",
-        "CHIPSAI_PASSWORD": "your-password"
+        "CHIPSAI_API_KEY": "chipsai_your_api_key_here"
       }
     }
   }
@@ -63,11 +72,10 @@ Add to `claude_desktop_config.json`:
 {
   "mcpServers": {
     "chipsai": {
-      "command": "uv",
-      "args": ["run", "--script", "/path/to/chipsai-mcp/server.py"],
+      "command": "uvx",
+      "args": ["chipsai-mcp"],
       "env": {
-        "CHIPSAI_USERNAME": "your-username",
-        "CHIPSAI_PASSWORD": "your-password"
+        "CHIPSAI_API_KEY": "chipsai_your_api_key_here"
       }
     }
   }
@@ -154,7 +162,9 @@ Once configured, use natural language in Claude:
 
 ## Authentication
 
-The server uses JWT with automatic token refresh. Tokens are obtained via username/password and refreshed transparently — no manual token management needed.
+**API Key (recommended):** Set `CHIPSAI_API_KEY` with a key generated from your dashboard. The key is sent as a Bearer token — no token management needed.
+
+**JWT (legacy):** If using username/password, tokens are obtained via JWT and refreshed transparently.
 
 ## License
 
