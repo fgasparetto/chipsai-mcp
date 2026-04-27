@@ -132,7 +132,8 @@ mcp = FastMCP(
         "Manage ai.chipsbuilder.com (ChipsAI) chatbots, conversations, and AI models. "
         "Use list_chatbots to see chatbots, get/create/update/delete them. "
         "Any authenticated user can manage conversations and send chat messages. "
-        "Use list_conversation_history / get_session_messages to browse widget chat history."
+        "Use list_conversation_history / get_session_messages to browse widget chat history. "
+        "Use connect_bot / list_bot_connections / disconnect_bot to manage bot-to-bot routing."
     ),
 )
 
@@ -329,6 +330,118 @@ async def send_message(
     if chat_history:
         data["chat_history"] = chat_history
     return await api_request("POST", f"/api/v1/chat/{chatbot_uuid}/vip/", json_data=data)
+
+
+# ========== Bot-to-Bot Connections ==========
+
+@mcp.tool()
+async def list_bot_connections(chatbot_uuid: str) -> dict:
+    """List all bot-to-bot connections where this chatbot is the orchestrator.
+    Returns specialist UUID, name, role, description, and active status."""
+    return await api_request("GET", f"/api/v1/chatbots/{chatbot_uuid}/connections/")
+
+
+@mcp.tool()
+async def connect_bot(
+    chatbot_uuid: str,
+    specialist_uuid: str,
+    role: str,
+    label: str = "",
+    description: str = "",
+) -> dict:
+    """Connect a specialist bot to an orchestrator bot.
+    The orchestrator will be able to route questions to the specialist based on its role/description.
+    Both bots must belong to the same user (MVP).
+
+    Args:
+        chatbot_uuid: UUID of the orchestrator bot.
+        specialist_uuid: UUID of the specialist bot to connect.
+        role: Short role label, e.g. 'billing-expert', 'tech-support'.
+        label: Short display label shown in chat UI when this specialist answers, e.g. 'Billing', 'Tech'.
+        description: What this specialist handles (injected into orchestrator's prompt).
+    """
+    data: dict[str, Any] = {
+        "specialist_uuid": specialist_uuid,
+        "role": role,
+        "description": description,
+    }
+    if label:
+        data["label"] = label
+    return await api_request(
+        "POST",
+        f"/api/v1/chatbots/{chatbot_uuid}/connections/",
+        json_data=data,
+    )
+
+
+@mcp.tool()
+async def update_bot_connection(
+    chatbot_uuid: str,
+    connection_id: int,
+    role: str = "",
+    label: str = "",
+    description: str = "",
+    is_active: bool | None = None,
+) -> dict:
+    """Update an existing bot-to-bot connection (role, label, description, or active status)."""
+    data: dict[str, Any] = {}
+    if role:
+        data["role"] = role
+    if label:
+        data["label"] = label
+    if description:
+        data["description"] = description
+    if is_active is not None:
+        data["is_active"] = is_active
+    if not data:
+        return {"error": "No fields to update"}
+    return await api_request(
+        "PATCH", f"/api/v1/chatbots/{chatbot_uuid}/connections/{connection_id}/", json_data=data
+    )
+
+
+@mcp.tool()
+async def disconnect_bot(chatbot_uuid: str, connection_id: int) -> dict:
+    """Remove a bot-to-bot connection."""
+    return await api_request("DELETE", f"/api/v1/chatbots/{chatbot_uuid}/connections/{connection_id}/")
+
+
+# ========== RAG Config ==========
+
+@mcp.tool()
+async def update_rag_config(
+    chatbot_uuid: str,
+    threshold: float | None = None,
+    hyde_enabled: bool | None = None,
+    hyde_word_limit: int | None = None,
+    debug_level: int | None = None,
+    chunk_size: int | None = None,
+    chunk_overlap: int | None = None,
+) -> dict:
+    """Update RAG (specialist routing) configuration for a chatbot.
+    threshold: cosine similarity cutoff 0.0–1.0 (default 0.40).
+    hyde_enabled: enable/disable HyDE Stage-2 routing.
+    hyde_word_limit: max words in HyDE synthetic query (3–50, default 15).
+    debug_level: 0=off, 1=show routing badge, 2=show badge + HyDE query.
+    chunk_size: embedding chunk size in tokens (128–2048, default 512).
+    chunk_overlap: chunk overlap in tokens (default 64).
+    Only non-None values are sent."""
+    data: dict[str, Any] = {}
+    if threshold is not None:
+        data["threshold"] = threshold
+    if hyde_enabled is not None:
+        data["hyde_enabled"] = hyde_enabled
+    if hyde_word_limit is not None:
+        data["hyde_word_limit"] = hyde_word_limit
+    if debug_level is not None:
+        data["debug_level"] = debug_level
+    if chunk_size is not None:
+        data["chunk_size"] = chunk_size
+    if chunk_overlap is not None:
+        data["chunk_overlap"] = chunk_overlap
+    if not data:
+        return {"error": "No fields to update. Provide at least one non-None field."}
+    return await api_request("PATCH", f"/api/chatbot/{chatbot_uuid}/rag-config/", json_data=data)
 
 
 # ========== User & Models ==========
