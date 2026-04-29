@@ -2,13 +2,13 @@
 
 # ChipsAI MCP Server
 
-MCP (Model Context Protocol) server for [ChipsAI](https://ai.chipsbuilder.com) — manage chatbots, conversations, documents, and AI models from Claude Code, Claude Desktop, or any MCP client.
+MCP (Model Context Protocol) server for [ChipsBot](https://bot.chipsbuilder.com) — manage chatbots, conversations, documents, bot-to-bot routing, RAG configuration, and AI models from Claude Code, Claude Desktop, or any MCP client.
 
 ## Requirements
 
 - Python 3.11+
 - [uv](https://docs.astral.sh/uv/) (recommended) or pip
-- A ChipsAI account ([sign up](https://ai.chipsbuilder.com))
+- A ChipsBot account ([sign up](https://bot.chipsbuilder.com))
 
 ## Quick Start
 
@@ -27,7 +27,7 @@ python server.py
 
 ## Configuration
 
-The server uses environment variables for authentication. **API key is the recommended method** — generate one from your [ChipsAI dashboard](https://ai.chipsbuilder.com/dashboard/settings/).
+The server uses environment variables for authentication. **API key is the recommended method** — generate one from your [ChipsBot dashboard](https://bot.chipsbuilder.com/dashboard/settings/).
 
 | Variable | Description | Default |
 |----------|-------------|---------|
@@ -126,12 +126,47 @@ Add to `claude_desktop_config.json`:
 |------|-------------|
 | `send_message` | Send a message and get AI response (auto-creates conversation) |
 
+### Bot-to-Bot Connections
+
+| Tool | Description |
+|------|-------------|
+| `connect_bot` | Connect a specialist bot to an orchestrator bot (role-based routing) |
+| `list_bot_connections` | List all specialist bots connected to an orchestrator |
+| `update_bot_connection` | Update role, label, description, or active status of a connection |
+| `disconnect_bot` | Remove a bot-to-bot connection |
+
+### RAG Configuration
+
+| Tool | Description |
+|------|-------------|
+| `get_rag_config` | Get RAG config: threshold, chunk settings, HyDE, L2, reranker, system instructions |
+| `update_rag_config` | Update RAG config (threshold, chunk_size, chunk_strategy, HyDE, L2, reranker, etc.) |
+
 ### User & Models
 
 | Tool | Description |
 |------|-------------|
 | `get_user_plan` | Get credit balance, unlimited status, usage stats |
 | `list_ai_models` | List available AI models by provider with credit costs |
+
+## RAG Pipeline
+
+ChipsBot supports a full Retrieval-Augmented Generation pipeline configurable per-bot:
+
+- **Semantic routing (L1):** pgvector + Jina Embeddings v3 — routes queries to the best specialist based on cosine similarity (HNSW index)
+- **HyDE:** for sparse/short queries, generates a hypothetical answer with Haiku and re-embeds it for better retrieval
+- **Chunk injection (L2):** at response time, injects only the top-K relevant KB chunks instead of the full prompt — reduces token usage, improves quality
+- **Reranking:** optional Jina cross-encoder reranker (`jina-reranker-v2-base-multilingual`) applied after cosine retrieval
+- **Chunking strategies:** `char` (fixed size), `paragraph` (semantic `\n\n` split), `sentence` (`.!?` split)
+- **Document upload:** PDF/DOC/DOCX parsed via LlamaParse, extracted text stored as KB
+
+Use `get_rag_config` / `update_rag_config` to tune all parameters per-bot.
+
+## Bot-to-Bot Routing
+
+An orchestrator bot can route questions to specialist bots based on role/description. The orchestrator detects `[ROUTE:uuid]` tags in its own response and delegates to the matching specialist, passing recent chat history as context.
+
+Use `connect_bot` to link specialists to an orchestrator, `list_bot_connections` to inspect the routing table, and `update_bot_connection` to adjust roles or toggle connections on/off.
 
 ## Credit System
 
@@ -159,6 +194,11 @@ Once configured, use natural language in Claude:
 - *"Change the chatbot model to Claude Sonnet 4.6"*
 - *"What's my credit balance?"*
 - *"What AI models are available?"*
+- *"Connect the billing bot as a specialist of my main orchestrator"*
+- *"List all specialist bots connected to my orchestrator"*
+- *"Show the RAG config for my chatbot"*
+- *"Set the RAG threshold to 0.5 and enable reranking"*
+- *"Enable L2 chunk injection with top_k=5"*
 
 ## Authentication
 
